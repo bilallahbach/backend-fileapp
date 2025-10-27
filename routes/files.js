@@ -26,7 +26,7 @@ router.get('/', async (req, res) => {
 
 
 router.get('/search', async (req, res) => {
-  const searchValue = req.query.q;
+  const searchValue = req.body.q;
 
   if (!searchValue) {
     return res.status(400).json({ error: 'Missing search query parameter "q"' });
