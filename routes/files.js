@@ -24,6 +24,37 @@ router.get('/', async (req, res) => {
   }
 });
 
+
+router.get('/search', async (req, res) => {
+  const searchValue = req.query.q;
+
+  if (!searchValue) {
+    return res.status(400).json({ error: 'Missing search query parameter "q"' });
+  }
+
+  try {
+    const [files] = await db.query(`
+      SELECT 
+        f.id, 
+        f.file_name, 
+        f.file_path,
+        f.created_at,
+        fl.user_name as locked_by,
+        fl.locked_at,
+        fl.is_active as is_locked
+      FROM files f
+      LEFT JOIN file_locks fl ON f.id = fl.file_id AND fl.is_active = TRUE
+      WHERE f.file_name LIKE ?
+      ORDER BY f.file_name
+    `, [`%${searchValue}%`]);
+
+    res.json(files);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+
 // Add new file
 router.post('/', async (req, res) => {
   try {
